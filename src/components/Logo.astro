@@ -1,0 +1,24 @@
+---
+import { site } from '../config/site';
+
+interface Props {
+  href: string;
+  inverted?: boolean;
+}
+
+const { href, inverted = false } = Astro.props;
+---
+
+<a href={href} class="group flex shrink-0 items-center gap-2.5" aria-label={site.brand} dir="ltr" lang="en">
+  <svg viewBox="0 0 32 32" class="size-9 transition-transform group-hover:-rotate-3" aria-hidden="true">
+    <rect width="32" height="32" rx="9" class={inverted ? 'fill-white/10' : 'fill-brand-600'} />
+    <path d="M8 10l8 13 8-13" fill="none" class="stroke-accent-400" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="16" cy="9" r="2.2" class="fill-white" />
+  </svg>
+  <span class="flex flex-col font-logo leading-none">
+    <span class:list={['text-[1.375rem] tracking-[-0.035em]', inverted ? 'text-white' : 'text-ink']}>
+      <span class="font-light">My</span><span class:list={['font-semibold', inverted ? 'text-accent-300' : 'text-brand-600']}>Vianova</span>
+    </span>
+    <span class:list={['mt-1 text-[0.6rem] font-medium tracking-[0.42em] uppercase', inverted ? 'text-white/55' : 'text-ink-soft']}>Insurance</span>
+  </span>
+</a>

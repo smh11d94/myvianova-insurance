@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-logo: "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0e2a3b;
+  --color-ink-soft: #3d5566;
+  --color-sand: #faf7f2;
+  --color-line: #e6e0d6;
+
+  --color-brand-50: #eef8f6;
+  --color-brand-100: #d4eee9;
+  --color-brand-200: #a9dcd3;
+  --color-brand-300: #74c3b6;
+  --color-brand-400: #43a596;
+  --color-brand-500: #26897a;
+  --color-brand-600: #1b6f63;
+  --color-brand-700: #185950;
+  --color-brand-800: #164841;
+  --color-brand-900: #133c37;
+
+  --color-accent-50: #fff7eb;
+  --color-accent-100: #fdebcb;
+  --color-accent-300: #f7c46f;
+  --color-accent-400: #f2a541;
+  --color-accent-500: #e08a1e;
+  --color-accent-600: #bd6b12;
+}
+
+/* Farsi uses Vazirmatn for everything. */
+:lang(fa) {
+  --font-sans: "Vazirmatn Variable", Tahoma, sans-serif;
+  --font-display: "Vazirmatn Variable", Tahoma, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-sand font-sans text-ink antialiased;
+  }
+  h1, h2, h3 {
+    @apply font-display tracking-tight text-balance;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+@utility container-page {
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+}
+@utility btn-primary {
+  @apply btn bg-brand-600 text-white hover:bg-brand-700;
+}
+@utility btn-accent {
+  @apply btn bg-accent-400 text-ink hover:bg-accent-300;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-white text-ink hover:border-brand-300 hover:bg-brand-50;
+}
+@utility card {
+  @apply rounded-2xl border border-line bg-white p-6 shadow-[0_1px_2px_rgba(14,42,59,0.04)];
+}
+@utility eyebrow {
+  @apply text-xs font-semibold tracking-[0.14em] text-brand-600 uppercase;
+  &:lang(fa) {
+    letter-spacing: normal;
+  }
+}
+
+@layer components {
+  .prose-content {
+    @apply space-y-4 text-[1.0625rem] leading-relaxed text-ink-soft;
+  }
+  .prose-content h2 {
+    @apply pt-4 text-2xl font-semibold text-ink;
+  }
+  .prose-content h3 {
+    @apply pt-2 text-xl font-semibold text-ink;
+  }
+  .prose-content ul {
+    @apply list-disc space-y-1.5 ps-6;
+  }
+  .prose-content strong {
+    @apply text-ink;
+  }
+  .prose-content a {
+    @apply text-brand-700 underline underline-offset-2;
+  }
+}

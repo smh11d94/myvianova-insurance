@@ -1,0 +1,84 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBanner from '../../components/CtaBanner.astro';
+import Icon from '../../components/Icon.astro';
+import { site } from '../../config/site';
+import { photo } from '../../lib/photos';
+import { getDictionary, localeNames, localeStaticPaths, localizePath, locales, type Locale } from '../../i18n';
+
+export const getStaticPaths = localeStaticPaths;
+
+const locale = Astro.params.locale as Locale;
+const t = getDictionary(locale);
+const a = t.about;
+const provinceNames = site.licensedProvinces.map((p) => t.contact.form.provinceNames[p]).join(', ');
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'InsuranceAgency',
+  name: site.brand,
+  url: site.url,
+  telephone: site.phone,
+  email: site.email,
+  address: { '@type': 'PostalAddress', addressLocality: 'Vancouver', addressRegion: 'BC', addressCountry: 'CA' },
+};
+const valueIcons = ['users', 'scale', 'heartPulse'] as const;
+---
+
+<BaseLayout locale={locale} title={a.title} description={a.subtitle} jsonLd={jsonLd}>
+  <section class="container-page py-14">
+    <p class="eyebrow">{a.title}</p>
+    <h1 class="mt-3 max-w-3xl text-4xl font-semibold sm:text-5xl">{a.subtitle}</h1>
+
+    <div class="mt-12 grid gap-10 lg:grid-cols-[1fr_360px]">
+      <div class="space-y-5">
+        <h2 class="text-3xl font-semibold">{a.bodyTitle}</h2>
+        {a.body.map((para) => <p class="text-lg leading-relaxed text-ink-soft">{para}</p>)}
+      </div>
+
+      <aside class="space-y-6">
+        <figure class="relative overflow-hidden rounded-3xl">
+          <Image
+            src={photo('vancouver')}
+            alt={t.photos.vancouver}
+            widths={[360, 720, 1024]}
+            sizes="(min-width: 1024px) 360px, 100vw"
+            class="aspect-[4/3] w-full object-cover"
+          />
+          <figcaption class="absolute start-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-ink backdrop-blur">
+            <Icon name="mapPin" class="size-3.5 text-brand-600" />{a.location}
+          </figcaption>
+        </figure>
+        <div class="card">
+          <h2 class="font-sans text-lg font-semibold">{a.credentialsTitle}</h2>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div><dt class="text-ink-soft">{a.credentials.license}</dt><dd class="font-medium">{site.licenseLabel}</dd></div>
+            <div><dt class="text-ink-soft">{a.credentials.licenseNumber}</dt><dd class="font-medium" dir="ltr">{site.licenseNumber}</dd></div>
+            <div><dt class="text-ink-soft">{a.credentials.provinces}</dt><dd class="font-medium">{provinceNames}</dd></div>
+            <div><dt class="text-ink-soft">{a.credentials.languages}</dt><dd class="font-medium">{locales.map((l) => localeNames[l]).join(' · ')}</dd></div>
+          </dl>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="bg-white py-16" aria-labelledby="values-title">
+    <div class="container-page">
+      <h2 id="values-title" class="text-3xl font-semibold">{a.valuesTitle}</h2>
+      <div class="mt-8 grid gap-6 md:grid-cols-3">
+        {a.values.map((v, i) => (
+          <div class="space-y-3">
+            <span class="flex size-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><Icon name={valueIcons[i % 3]} class="size-5" /></span>
+            <h3 class="font-sans text-lg font-semibold">{v.title}</h3>
+            <p class="text-ink-soft">{v.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <div class="pt-16">
+    <CtaBanner title={t.home.cta.title} text={t.home.cta.text} button={t.home.cta.button} href={localizePath(locale, 'contact')} />
+  </div>
+</BaseLayout>

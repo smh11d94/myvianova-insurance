@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import CalculatorCard from '../../../components/CalculatorCard.astro';
+import { calculatorSlugs } from '../../../data/catalog';
+import { getDictionary, localeStaticPaths, type Locale } from '../../../i18n';
+
+export const getStaticPaths = localeStaticPaths;
+
+const locale = Astro.params.locale as Locale;
+const t = getDictionary(locale);
+---
+
+<BaseLayout locale={locale} title={t.calculatorsPage.title} description={t.calculatorsPage.subtitle}>
+  <section class="container-page py-14">
+    <h1 class="text-4xl font-semibold sm:text-5xl">{t.calculatorsPage.title}</h1>
+    <p class="mt-4 max-w-2xl text-lg text-ink-soft">{t.calculatorsPage.subtitle}</p>
+    <div class="mt-10 grid gap-4 md:grid-cols-2">
+      {calculatorSlugs.map((slug) => <CalculatorCard slug={slug} locale={locale} />)}
+    </div>
+  </section>
+</BaseLayout>

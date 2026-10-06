@@ -1,0 +1,21 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { fill, getDictionary, htmlLang, localeStaticPaths, type Locale } from '../../i18n';
+
+export const getStaticPaths = localeStaticPaths;
+
+const locale = Astro.params.locale as Locale;
+const t = getDictionary(locale);
+const entry = (await getEntry('pages', `${locale}/privacy`)) ?? (await getEntry('pages', 'en/privacy'))!;
+const { Content } = await render(entry);
+const updated = new Intl.DateTimeFormat(htmlLang[locale], { dateStyle: 'long', timeZone: 'UTC' }).format(entry.data.updated);
+---
+
+<BaseLayout locale={locale} title={entry.data.title} description={entry.data.description}>
+  <article class="container-page max-w-3xl py-14">
+    <h1 class="text-4xl font-semibold sm:text-5xl">{entry.data.title}</h1>
+    <p class="mt-3 text-sm text-ink-soft">{fill(t.privacy.updated, { date: updated })}</p>
+    <div class="prose-content mt-10"><Content /></div>
+  </article>
+</BaseLayout>

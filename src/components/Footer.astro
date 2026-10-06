@@ -1,0 +1,78 @@
+---
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+import { site } from '../config/site';
+import { calculatorSlugs } from '../data/catalog';
+import { getDictionary, localizePath, type Locale } from '../i18n';
+import { getProducts } from '../lib/content';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const products = await getProducts(locale);
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-24 bg-ink text-white/80">
+  <div class="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+    <div class="space-y-4">
+      <Logo href={localizePath(locale)} inverted />
+      <p class="max-w-xs text-sm leading-relaxed text-white/70">{t.footer.tagline}</p>
+      <ul class="space-y-2 text-sm">
+        <li>
+          <a href={site.phoneHref} class="inline-flex items-center gap-2 hover:text-white">
+            <Icon name="phone" class="size-4 text-accent-300" /><span dir="ltr">{site.phone}</span>
+          </a>
+        </li>
+        <li>
+          <a href={`mailto:${site.email}`} class="inline-flex items-center gap-2 hover:text-white">
+            <Icon name="mail" class="size-4 text-accent-300" />{site.email}
+          </a>
+        </li>
+        <li class="inline-flex items-center gap-2">
+          <Icon name="mapPin" class="size-4 text-accent-300" />{t.about.location}
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="mb-4 font-sans text-sm font-semibold text-white">{t.footer.products}</h2>
+      <ul class="grid grid-cols-1 gap-2 text-sm">
+        {products.map((p) => (
+          <li><a href={localizePath(locale, `insurance/${p.slug}`)} class="hover:text-white">{p.data.title}</a></li>
+        ))}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="mb-4 font-sans text-sm font-semibold text-white">{t.footer.tools}</h2>
+      <ul class="space-y-2 text-sm">
+        {calculatorSlugs.map((slug) => (
+          <li><a href={localizePath(locale, `calculators/${slug}`)} class="hover:text-white">{t.calc.items[slug].title}</a></li>
+        ))}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="mb-4 font-sans text-sm font-semibold text-white">{t.footer.company}</h2>
+      <ul class="space-y-2 text-sm">
+        <li><a href={localizePath(locale, 'about')} class="hover:text-white">{t.nav.about}</a></li>
+        <li><a href={localizePath(locale, 'contact')} class="hover:text-white">{t.nav.contact}</a></li>
+        <li><a href={localizePath(locale, 'privacy')} class="hover:text-white">{t.footer.privacy}</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-white/10">
+    <div class="container-page space-y-3 py-8 text-xs leading-relaxed text-white/55">
+      <p>{t.footer.disclaimer}</p>
+      <p>
+        {site.brand} · {site.licenseLabel} · #{site.licenseNumber} · {site.licensedProvinces.join(', ')}
+      </p>
+      <p>© {year} {site.brand}. {t.footer.rights}</p>
+    </div>
+  </div>
+</footer>

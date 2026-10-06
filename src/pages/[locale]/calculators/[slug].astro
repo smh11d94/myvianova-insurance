@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import CalculatorCard from '../../../components/CalculatorCard.astro';
+import Icon from '../../../components/Icon.astro';
+import AnnuityPayout from '../../../islands/calculators/AnnuityPayout';
+import CriticalIllness from '../../../islands/calculators/CriticalIllness';
+import DisabilityIncome from '../../../islands/calculators/DisabilityIncome';
+import LifeNeeds from '../../../islands/calculators/LifeNeeds';
+import LongTermCare from '../../../islands/calculators/LongTermCare';
+import SavingsGrowth from '../../../islands/calculators/SavingsGrowth';
+import SegFundGuarantee from '../../../islands/calculators/SegFundGuarantee';
+import TermVsPermanent from '../../../islands/calculators/TermVsPermanent';
+import { calculatorMeta, calculatorSlugs, type CalculatorSlug } from '../../../data/catalog';
+import { fill, getDictionary, locales, localizePath, type Locale } from '../../../i18n';
+import { getProduct } from '../../../lib/content';
+
+export function getStaticPaths() {
+  return locales.flatMap((locale) => calculatorSlugs.map((slug) => ({ params: { locale, slug } })));
+}
+
+const locale = Astro.params.locale as Locale;
+const slug = Astro.params.slug as CalculatorSlug;
+const t = getDictionary(locale);
+const item = t.calc.items[slug];
+const meta = calculatorMeta[slug];
+const product = await getProduct(locale, meta.product);
+const others = calculatorSlugs.filter((s) => s !== slug).slice(0, 4);
+
+const common = {
+  locale,
+  common: t.calc.common,
+  contactHref: localizePath(locale, 'contact'),
+  product: meta.product,
+  calculatorTitle: item.title,
+};
+---
+
+<BaseLayout locale={locale} title={item.title} description={item.description}>
+  <section class="container-page py-12">
+    <nav aria-label="Breadcrumb" class="text-sm text-ink-soft">
+      <a href={localizePath(locale, 'calculators')} class="hover:text-brand-700">{t.nav.calculators}</a>
+    </nav>
+    <div class="mt-4 flex items-start gap-4">
+      <span class="hidden size-14 shrink-0 items-center justify-center rounded-2xl bg-accent-400 text-ink sm:flex">
+        <Icon name={meta.icon} class="size-7" />
+      </span>
+      <div class="space-y-3">
+        <h1 class="text-4xl font-semibold sm:text-5xl">{item.title}</h1>
+        <p class="max-w-2xl text-lg text-ink-soft">{item.description}</p>
+        {product && (
+          <a href={localizePath(locale, `insurance/${product.slug}`)} class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:underline">
+            {fill(t.calc.common.relatedProduct, { product: product.data.title })}
+            <Icon name="arrowRight" class="size-4 rtl:-scale-x-100" />
+          </a>
+        )}
+      </div>
+    </div>
+
+    <div class="mt-10">
+      {slug === 'life-insurance-needs' && <LifeNeeds client:load {...common} strings={t.calc.items['life-insurance-needs']} />}
+      {slug === 'term-vs-permanent' && <TermVsPermanent client:load {...common} strings={t.calc.items['term-vs-permanent']} />}
+      {slug === 'critical-illness' && <CriticalIllness client:load {...common} strings={t.calc.items['critical-illness']} />}
+      {slug === 'disability-income' && <DisabilityIncome client:load {...common} strings={t.calc.items['disability-income']} />}
+      {slug === 'long-term-care' && <LongTermCare client:load {...common} strings={t.calc.items['long-term-care']} />}
+      {slug === 'segregated-fund-guarantee' && <SegFundGuarantee client:load {...common} strings={t.calc.items['segregated-fund-guarantee']} />}
+      {slug === 'annuity-payout' && <AnnuityPayout client:load {...common} strings={t.calc.items['annuity-payout']} />}
+      {slug === 'rrsp-tfsa-resp' && <SavingsGrowth client:load {...common} strings={t.calc.items['rrsp-tfsa-resp']} />}
+    </div>
+  </section>
+
+  <section class="container-page pb-8" aria-labelledby="more-title">
+    <h2 id="more-title" class="mb-6 text-2xl font-semibold">{t.home.calculators.viewAll}</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+      {others.map((s) => <CalculatorCard slug={s} locale={locale} />)}
+    </div>
+  </section>
+</BaseLayout>

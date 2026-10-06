@@ -1,0 +1,235 @@
+---
+import { render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import CalculatorCard from '../../../components/CalculatorCard.astro';
+import CtaBanner from '../../../components/CtaBanner.astro';
+import Icon from '../../../components/Icon.astro';
+import ProductCard from '../../../components/ProductCard.astro';
+import { productMeta, productSlugs } from '../../../data/catalog';
+import { fill, getDictionary, locales, localizePath, type Locale } from '../../../i18n';
+import { getProduct, getProducts } from '../../../lib/content';
+import { photo } from '../../../lib/photos';
+
+export function getStaticPaths() {
+  return locales.flatMap((locale) => productSlugs.map((slug) => ({ params: { locale, slug } })));
+}
+
+const locale = Astro.params.locale as Locale;
+const t = getDictionary(locale);
+const p = t.product;
+const product = (await getProduct(locale, Astro.params.slug!))!;
+const d = product.data;
+const { Content } = await render(product);
+const all = await getProducts(locale);
+const related = d.relatedProducts.map((slug) => all.find((x) => x.slug === slug)!).filter(Boolean);
+const contactHref = `${localizePath(locale, 'contact')}?product=${product.slug}`;
+
+const sections = [
+  { id: 'overview', label: p.overview },
+  { id: 'how', label: p.howItWorks },
+  { id: 'benefits', label: p.benefits },
+  { id: 'who', label: p.whoFor },
+  { id: 'pros-cons', label: p.prosCons },
+  ...(d.comparison ? [{ id: 'compare', label: p.compare }] : []),
+  { id: 'faq', label: p.faq },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: d.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+};
+---
+
+<BaseLayout locale={locale} title={d.title} description={d.seoDescription} jsonLd={jsonLd}>
+  <!-- Hero -->
+  <section class="overflow-hidden border-b border-line bg-white">
+    <div class="container-page py-12 sm:py-16">
+      <nav aria-label="Breadcrumb" class="text-sm text-ink-soft">
+        <a href={localizePath(locale, 'insurance')} class="hover:text-brand-700">{p.breadcrumb}</a>
+        <span class="mx-2" aria-hidden="true">/</span>
+        <a href={`${localizePath(locale, 'insurance')}#${d.category}`} class="hover:text-brand-700">{t.categories[d.category].name}</a>
+      </nav>
+      <div class="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_440px]">
+        <div class="max-w-3xl space-y-4">
+          <span class="flex size-14 items-center justify-center rounded-2xl bg-brand-600 text-white">
+            <Icon name={productMeta[product.slug].icon} class="size-7" />
+          </span>
+          <h1 class="text-4xl font-semibold sm:text-5xl">{d.title}</h1>
+          <p class="text-xl text-brand-700">{d.tagline}</p>
+          <p class="text-lg leading-relaxed text-ink-soft">{d.summary}</p>
+          <div class="flex flex-wrap gap-3 pt-2">
+            <a href={contactHref} class="btn-primary px-6 py-3 text-base">{p.ctaButton}</a>
+            {d.relatedCalculator && (
+              <a href={localizePath(locale, `calculators/${d.relatedCalculator}`)} class="btn-ghost px-6 py-3 text-base">
+                <Icon name="calculator" class="size-4" />{p.calcCta}
+              </a>
+            )}
+          </div>
+        </div>
+        <div class="relative isolate mx-3 lg:mx-0">
+          <div class="absolute -inset-3 -z-10 -rotate-2 rounded-[2rem] bg-brand-100" aria-hidden="true"></div>
+          <Image
+            src={photo(product.slug)}
+            alt={t.photos[product.slug]}
+            widths={[440, 720, 960]}
+            sizes="(min-width: 1024px) 440px, 100vw"
+            loading="eager"
+            class="aspect-[4/3] w-full rounded-3xl object-cover shadow-lg"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-page grid gap-12 py-12 lg:grid-cols-[220px_minmax(0,1fr)]">
+    <!-- Table of contents -->
+    <aside class="hidden lg:block">
+      <nav class="sticky top-24 space-y-1 text-sm" aria-label={p.onThisPage}>
+        <p class="mb-3 font-semibold text-ink">{p.onThisPage}</p>
+        {sections.map((s) => (
+          <a href={`#${s.id}`} class="block rounded-lg border-s-2 border-line px-3 py-1.5 text-ink-soft hover:border-brand-500 hover:text-brand-700">{s.label}</a>
+        ))}
+      </nav>
+    </aside>
+
+    <div class="min-w-0 space-y-16">
+      <section id="overview" class="scroll-mt-24">
+        <h2 class="sr-only">{p.overview}</h2>
+        <div class="prose-content max-w-3xl"><Content /></div>
+      </section>
+
+      <section id="how" class="scroll-mt-24" aria-labelledby="how-title">
+        <h2 id="how-title" class="text-3xl font-semibold">{p.howItWorks}</h2>
+        <ol class="mt-6 grid gap-4 sm:grid-cols-2">
+          {d.howItWorks.map((step, i) => (
+            <li class="card flex gap-4">
+              <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-400 font-semibold">{i + 1}</span>
+              <div>
+                <h3 class="font-sans font-semibold">{step.title}</h3>
+                <p class="mt-1 text-sm leading-relaxed text-ink-soft">{step.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section id="benefits" class="scroll-mt-24" aria-labelledby="benefits-title">
+        <h2 id="benefits-title" class="text-3xl font-semibold">{p.benefits}</h2>
+        <div class="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+          {d.benefits.map((b) => (
+            <div class="flex gap-3">
+              <span class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                <Icon name="check" class="size-4" strokeWidth={2.5} />
+              </span>
+              <div>
+                <h3 class="font-sans font-semibold">{b.title}</h3>
+                <p class="mt-1 text-sm leading-relaxed text-ink-soft">{b.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="who" class="scroll-mt-24" aria-labelledby="who-title">
+        <h2 id="who-title" class="text-3xl font-semibold">{p.whoFor}</h2>
+        <div class="mt-6 grid gap-5 md:grid-cols-3">
+          {d.useCases.map((u) => (
+            <article class="card flex flex-col gap-3">
+              <span class="inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+                <Icon name="users" class="size-3.5" />{u.persona}
+              </span>
+              <p class="font-medium text-ink">{u.scenario}</p>
+              <p class="mt-auto border-t border-line pt-3 text-sm leading-relaxed text-ink-soft">
+                <span class="font-semibold text-brand-700">{p.why}: </span>{u.why}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="pros-cons" class="scroll-mt-24" aria-labelledby="pc-title">
+        <h2 id="pc-title" class="text-3xl font-semibold">{p.prosCons}</h2>
+        <div class="mt-6 grid gap-5 md:grid-cols-2">
+          <div class="card border-brand-200 bg-brand-50/50">
+            <h3 class="font-sans font-semibold text-brand-800">{p.pros}</h3>
+            <ul class="mt-4 space-y-3">
+              {d.pros.map((x) => (
+                <li class="flex gap-2.5 text-sm"><Icon name="check" class="mt-0.5 size-4 shrink-0 text-brand-600" strokeWidth={2.5} />{x}</li>
+              ))}
+            </ul>
+          </div>
+          <div class="card border-accent-100 bg-accent-50/60">
+            <h3 class="font-sans font-semibold text-accent-600">{p.cons}</h3>
+            <ul class="mt-4 space-y-3">
+              {d.cons.map((x) => (
+                <li class="flex gap-2.5 text-sm"><span class="mt-2 size-1.5 shrink-0 rounded-full bg-accent-500" aria-hidden="true"></span>{x}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {d.comparison && (
+        <section id="compare" class="scroll-mt-24" aria-labelledby="compare-title">
+          <h2 id="compare-title" class="text-3xl font-semibold">{p.compare}</h2>
+          <div class="mt-6 overflow-x-auto rounded-2xl border border-line bg-white">
+            <table class="w-full min-w-[560px] text-start text-sm">
+              <caption class="sr-only">{d.comparison.caption}</caption>
+              <thead class="bg-sand">
+                <tr>
+                  <th scope="col" class="p-4"><span class="sr-only">{d.comparison.caption}</span></th>
+                  {d.comparison.columns.map((col, i) => (
+                    <th scope="col" class:list={['p-4 text-start font-semibold', i === 0 && 'text-brand-700']}>{col}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line">
+                {d.comparison.rows.map((row) => (
+                  <tr>
+                    <th scope="row" class="p-4 text-start font-medium text-ink">{row.label}</th>
+                    {row.values.map((v, i) => <td class:list={['p-4 text-ink-soft', i === 0 && 'bg-brand-50/50 text-ink']}>{v}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {d.relatedCalculator && (
+        <section aria-labelledby="calc-title">
+          <h2 id="calc-title" class="mb-4 text-2xl font-semibold">{p.calcTitle}</h2>
+          <CalculatorCard slug={d.relatedCalculator} locale={locale} />
+        </section>
+      )}
+
+      <section id="faq" class="scroll-mt-24" aria-labelledby="faq-title">
+        <h2 id="faq-title" class="text-3xl font-semibold">{p.faq}</h2>
+        <div class="mt-6 divide-y divide-line rounded-2xl border border-line bg-white">
+          {d.faq.map((f) => (
+            <details class="group p-5">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
+                {f.q}
+                <Icon name="chevronDown" class="size-5 shrink-0 text-brand-600 transition-transform group-open:rotate-180" />
+              </summary>
+              <p class="mt-3 leading-relaxed text-ink-soft">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
+
+  {related.length > 0 && (
+    <section class="container-page pb-16" aria-labelledby="related-title">
+      <h2 id="related-title" class="mb-6 text-2xl font-semibold">{p.related}</h2>
+      <div class="grid gap-5 md:grid-cols-3">
+        {related.map((r) => <ProductCard product={r} locale={locale} cta={t.insurance.learnMore} />)}
+      </div>
+    </section>
+  )}
+
+  <CtaBanner title={fill(p.ctaTitle, { product: d.title })} text={p.ctaText} button={p.ctaButton} href={contactHref} />
+</BaseLayout>

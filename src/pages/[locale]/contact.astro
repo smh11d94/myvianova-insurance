@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import ContactForm from '../../islands/ContactForm';
+import { site } from '../../config/site';
+import { categories } from '../../data/catalog';
+import { getDictionary, localeStaticPaths, localizePath, type Locale } from '../../i18n';
+import { getProducts } from '../../lib/content';
+
+export const getStaticPaths = localeStaticPaths;
+
+const locale = Astro.params.locale as Locale;
+const t = getDictionary(locale);
+const c = t.contact;
+const products = (await getProducts(locale)).map((p) => ({ slug: p.slug, title: p.data.title, category: p.data.category }));
+const categoryNames = Object.fromEntries(categories.map((k) => [k, t.categories[k].name])) as Record<(typeof categories)[number], string>;
+---
+
+<BaseLayout locale={locale} title={c.title} description={c.subtitle}>
+  <section class="container-page py-14">
+    <div class="max-w-2xl">
+      <h1 class="text-4xl font-semibold sm:text-5xl">{c.title}</h1>
+      <p class="mt-4 text-lg text-ink-soft">{c.subtitle}</p>
+    </div>
+
+    <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <ContactForm
+        client:load
+        locale={locale}
+        t={c.form}
+        products={products}
+        categoryNames={categoryNames}
+        privacyHref={localizePath(locale, 'privacy')}
+      />
+
+      <aside class="space-y-6">
+        <div class="rounded-2xl bg-ink p-6 text-white">
+          <h2 class="font-sans text-lg font-semibold">{c.sidebar.title}</h2>
+          <p class="mt-2 text-sm text-white/70">{c.sidebar.text}</p>
+          <ul class="mt-5 space-y-3 text-sm">
+            <li>
+              <a href={site.phoneHref} class="flex items-center gap-3 hover:text-accent-300">
+                <span class="flex size-9 items-center justify-center rounded-full bg-white/10"><Icon name="phone" class="size-4" /></span>
+                <span dir="ltr">{site.phone}</span>
+              </a>
+            </li>
+            <li>
+              <a href={`mailto:${site.email}`} class="flex items-center gap-3 hover:text-accent-300">
+                <span class="flex size-9 items-center justify-center rounded-full bg-white/10"><Icon name="mail" class="size-4" /></span>
+                {site.email}
+              </a>
+            </li>
+            <li class="flex items-center gap-3">
+              <span class="flex size-9 items-center justify-center rounded-full bg-white/10"><Icon name="clock" class="size-4" /></span>
+              <span class="text-white/80">{c.sidebar.hours}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2 class="font-sans text-lg font-semibold">{c.sidebar.promiseTitle}</h2>
+          <ul class="mt-4 space-y-3 text-sm">
+            {c.sidebar.promises.map((p) => (
+              <li class="flex gap-2.5"><Icon name="shield" class="size-4 shrink-0 text-brand-600" />{p}</li>
+            ))}
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

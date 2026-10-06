@@ -1,0 +1,48 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { productMeta } from '../data/catalog';
+import { getDictionary, localizePath, type Locale } from '../i18n';
+import type { ProductEntry } from '../lib/content';
+import { photo } from '../lib/photos';
+
+interface Props {
+  product: ProductEntry;
+  locale: Locale;
+  cta: string;
+}
+
+const { product, locale, cta } = Astro.props;
+const meta = productMeta[product.slug];
+const t = getDictionary(locale);
+---
+
+<a
+  href={localizePath(locale, `insurance/${product.slug}`)}
+  class="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg"
+>
+  <div class="relative">
+    <div class="aspect-[3/2] overflow-hidden bg-brand-50">
+      <Image
+        src={photo(product.slug)}
+        alt={t.photos[product.slug]}
+        widths={[360, 560, 720]}
+        sizes="(min-width: 1024px) 270px, (min-width: 640px) 50vw, 100vw"
+        class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+    </div>
+    <span class="absolute start-4 -bottom-5 flex size-11 items-center justify-center rounded-xl bg-white text-brand-700 shadow-md transition-colors group-hover:bg-brand-600 group-hover:text-white">
+      <Icon name={meta.icon} class="size-5.5" />
+    </span>
+  </div>
+  <div class="flex flex-1 flex-col gap-4 p-6 pt-8">
+    <div class="flex-1 space-y-2">
+      <h3 class="text-lg font-semibold">{product.data.title}</h3>
+      <p class="text-sm leading-relaxed text-ink-soft">{product.data.tagline}</p>
+    </div>
+    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700">
+      {cta}
+      <Icon name="arrowRight" class="size-4 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
+    </span>
+  </div>
+</a>

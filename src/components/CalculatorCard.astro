@@ -1,0 +1,28 @@
+---
+import Icon from './Icon.astro';
+import { calculatorMeta, type CalculatorSlug } from '../data/catalog';
+import { getDictionary, localizePath, type Locale } from '../i18n';
+
+interface Props {
+  slug: CalculatorSlug;
+  locale: Locale;
+}
+
+const { slug, locale } = Astro.props;
+const t = getDictionary(locale);
+const item = t.calc.items[slug];
+---
+
+<a
+  href={localizePath(locale, `calculators/${slug}`)}
+  class="group flex h-full items-start gap-4 rounded-2xl border border-line bg-white p-5 transition hover:border-brand-200 hover:shadow-lg"
+>
+  <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-600">
+    <Icon name={calculatorMeta[slug].icon} class="size-5.5" />
+  </span>
+  <span class="flex-1 space-y-1">
+    <span class="block font-semibold text-ink">{item.title}</span>
+    <span class="block text-sm leading-relaxed text-ink-soft">{item.description}</span>
+  </span>
+  <Icon name="arrowRight" class="mt-1 size-4 shrink-0 text-brand-600 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100" />
+</a>

@@ -1,0 +1,108 @@
+---
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+import { getDictionary, localeNames, locales, localizePath, switchLocalePath, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const path = Astro.url.pathname;
+
+const links = [
+  { href: localizePath(locale, 'insurance'), label: t.nav.insurance },
+  { href: localizePath(locale, 'calculators'), label: t.nav.calculators },
+  { href: localizePath(locale, 'about'), label: t.nav.about },
+  { href: localizePath(locale, 'contact'), label: t.nav.contact },
+];
+const isActive = (href: string) => path.startsWith(href.replace(/\/$/, ''));
+---
+
+<header class="sticky top-0 z-40 border-b border-line/80 bg-sand/90 backdrop-blur">
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-3 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2">
+    {t.nav.skipToContent}
+  </a>
+  <div class="container-page flex h-16 items-center justify-between gap-4">
+    <Logo href={localizePath(locale)} />
+
+    <nav class="hidden items-center gap-1 lg:flex" aria-label="Main">
+      {links.map((l) => (
+        <a
+          href={l.href}
+          class:list={[
+            'rounded-full px-3.5 py-2 text-sm font-medium transition-colors hover:bg-white hover:text-brand-700',
+            isActive(l.href) ? 'bg-white text-brand-700' : 'text-ink-soft',
+          ]}
+          aria-current={isActive(l.href) ? 'page' : undefined}
+        >
+          {l.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <details class="group relative" data-dropdown>
+        <summary
+          class="flex cursor-pointer list-none items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-ink-soft hover:bg-white [&::-webkit-details-marker]:hidden"
+          aria-label={t.nav.language}
+        >
+          <Icon name="globe" class="size-4" />
+          <span class="uppercase">{locale}</span>
+          <Icon name="chevronDown" class="size-3.5 transition-transform group-open:rotate-180" />
+        </summary>
+        <ul class="absolute end-0 mt-2 w-40 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
+          {locales.map((l) => (
+            <li>
+              <a
+                href={switchLocalePath(path, l)}
+                hreflang={l}
+                lang={l}
+                class:list={['block px-4 py-2 text-sm hover:bg-brand-50', l === locale && 'font-semibold text-brand-700']}
+                aria-current={l === locale ? 'true' : undefined}
+              >
+                {localeNames[l]}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      <a href={localizePath(locale, 'contact')} class="btn-primary hidden sm:inline-flex">{t.nav.getQuote}</a>
+
+      <details class="group lg:hidden" data-dropdown>
+        <summary
+          class="flex cursor-pointer list-none items-center rounded-full p-2 text-ink hover:bg-white [&::-webkit-details-marker]:hidden"
+          aria-label={t.nav.menu}
+        >
+          <Icon name="menu" class="size-6 group-open:hidden" />
+          <Icon name="x" class="hidden size-6 group-open:block" />
+        </summary>
+        <nav class="absolute inset-x-0 top-16 border-b border-line bg-sand px-4 pt-2 pb-6 shadow-lg" aria-label="Mobile">
+          <ul class="space-y-1">
+            {links.map((l) => (
+              <li>
+                <a href={l.href} class="block rounded-xl px-4 py-3 text-base font-medium hover:bg-white">{l.label}</a>
+              </li>
+            ))}
+          </ul>
+          <a href={localizePath(locale, 'contact')} class="btn-primary mt-4 w-full">{t.nav.getQuote}</a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Close open dropdowns when clicking outside or pressing Escape.
+  const dropdowns = document.querySelectorAll<HTMLDetailsElement>('details[data-dropdown]');
+  document.addEventListener('click', (e) => {
+    dropdowns.forEach((d) => {
+      if (d.open && !d.contains(e.target as Node)) d.open = false;
+    });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') dropdowns.forEach((d) => (d.open = false));
+  });
+</script>

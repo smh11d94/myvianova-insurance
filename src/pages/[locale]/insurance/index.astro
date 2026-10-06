@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import CtaBanner from '../../../components/CtaBanner.astro';
+import Icon from '../../../components/Icon.astro';
+import ProductCard from '../../../components/ProductCard.astro';
+import { categories, categoryIcons } from '../../../data/catalog';
+import { getDictionary, localeStaticPaths, localizePath, type Locale } from '../../../i18n';
+import { getProductsByCategory } from '../../../lib/content';
+
+export const getStaticPaths = localeStaticPaths;
+
+const locale = Astro.params.locale as Locale;
+const t = getDictionary(locale);
+const byCategory = await getProductsByCategory(locale);
+---
+
+<BaseLayout locale={locale} title={t.insurance.title} description={t.insurance.subtitle}>
+  <section class="container-page pt-14 pb-6">
+    <h1 class="text-4xl font-semibold sm:text-5xl">{t.insurance.title}</h1>
+    <p class="mt-4 max-w-2xl text-lg text-ink-soft">{t.insurance.subtitle}</p>
+    <nav class="mt-8 flex flex-wrap gap-2" aria-label={t.nav.insurance}>
+      {categories.map((c) => (
+        <a href={`#${c}`} class="btn-ghost"><Icon name={categoryIcons[c]} class="size-4 text-brand-600" />{t.categories[c].name}</a>
+      ))}
+    </nav>
+  </section>
+
+  {categories.map((c) => (
+    <section id={c} class="container-page scroll-mt-24 py-10" aria-labelledby={`${c}-title`}>
+      <div class="mb-6 max-w-2xl">
+        <h2 id={`${c}-title`} class="text-2xl font-semibold sm:text-3xl">{t.categories[c].name}</h2>
+        <p class="mt-2 text-ink-soft">{t.categories[c].description}</p>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {byCategory[c].map((p) => <ProductCard product={p} locale={locale} cta={t.insurance.learnMore} />)}
+      </div>
+    </section>
+  ))}
+
+  <div class="pt-10">
+    <CtaBanner title={t.home.cta.title} text={t.home.cta.text} button={t.home.cta.button} href={localizePath(locale, 'contact')} />
+  </div>
+</BaseLayout>

@@ -1,0 +1,29 @@
+---
+import { basePath, defaultLocale, localizePath, locales } from '../i18n';
+
+// Static redirect: the inline script picks the browser language; the meta refresh falls back to English.
+const target = localizePath(defaultLocale);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <link rel="canonical" href={target} />
+    <title>MyVianova Insurance</title>
+    <script is:inline define:vars={{ base: basePath, supported: locales }}>
+      var langs = navigator.languages || [navigator.language || 'en'];
+      var match = 'en';
+      for (var i = 0; i < langs.length; i++) {
+        var l = String(langs[i]).slice(0, 2).toLowerCase();
+        if (supported.indexOf(l) !== -1) { match = l; break; }
+      }
+      location.replace(base + '/' + match + '/');
+    </script>
+  </head>
+  <body>
+    <a href={target}>MyVianova Insurance</a>
+  </body>
+</html>
